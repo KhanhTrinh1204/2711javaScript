@@ -1,0 +1,134 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Main Container */
+.container {
+    background-color: white;
+    width: 400px; /* 350-450px requirement */
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Title */
+h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Add Todo Area */
+.add-todo-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.add-todo-container input {
+    flex-grow: 1; /* Occupy remaining space */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    outline: none;
+    font-size: 1rem;
+}
+
+.add-todo-container input:focus {
+    border-color: #007bff;
+}
+
+.add-btn {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.add-btn:hover {
+    background-color: #0056b3;
+}
+
+/* Todo List */
+.todo-list {
+    list-style: none;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.todo-item:last-child {
+    border-bottom: none;
+}
+
+.todo-item input[type="checkbox"] {
+    margin-right: 15px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.todo-text {
+    flex-grow: 1;
+    font-size: 1rem;
+    color: #333;
+    word-break: break-word; /* Handle long text */
+}
+
+/* Icons */
+.actions {
+    display: flex;
+    gap: 15px;
+    margin-left: 10px;
+}
+
+.actions i {
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+}
+
+.actions i:hover {
+    color: #333;
+}
+
+.actions .fa-trash:hover {
+    color: #dc3545;
+}
+
+/* Completed Task State */
+.todo-item.completed .todo-text {
+    text-decoration: line-through;
+    color: #aaa;
+}
+
+.todo-item.completed input[type="checkbox"] {
+    accent-color: #007bff;
+}
+
+.todo-item.empty {
+    justify-content: center;
+    color: #888;
+    font-style: italic;
+    pointer-events: none;
+}

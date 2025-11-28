@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'todo-app-items';
+const API_URL = 'https://67d64b81286fdac89bc18855.mockapi.io/todo';
 
 const todoInput = document.querySelector('.add-todo-container input');
 const addBtn = document.querySelector('.add-btn');
@@ -6,45 +6,19 @@ const todoList = document.querySelector('.todo-list');
 
 let isEditing = false;
 let currentEditId = null;
-let todos = [];
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', fetchTodos);
 
-function init() {
-    todos = loadTodos();
-    renderTodos(todos);
-}
-
-function loadTodos() {
+async function fetchTodos() {
     try {
-        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        if (Array.isArray(stored)) {
-            return stored;
-        }
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error('Failed to fetch todos');
+        const todos = await response.json();
+        renderTodos(todos);
     } catch (error) {
-        console.warn('Unable to parse todos from storage:', error);
+        console.error('Error fetching todos:', error);
+        renderTodos([]);
     }
-
-    const seedData = [
-        createTodo('Have breakfast'),
-        createTodo('Do homework'),
-        createTodo('Check email', true)
-    ];
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(seedData));
-    return seedData;
-}
-
-function saveTodos() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
-}
-
-function createTodo(name, completed = false) {
-    return {
-        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
-        name,
-        completed
-    };
 }
 
 function renderTodos(list) {
@@ -65,7 +39,7 @@ function renderTodos(list) {
 
         li.innerHTML = `
             <input type="checkbox" ${todo.completed ? 'checked' : ''}>
-            <span class="todo-text">${escapeHtml(todo.name)}</span>
+            <span class="todo-text">${escapeHtml(todo.name || todo.title || '')}</span>
             <div class="actions">
                 <i class="fa-solid fa-pen edit-btn"></i>
                 <i class="fa-solid fa-trash delete-btn"></i>
@@ -73,7 +47,7 @@ function renderTodos(list) {
         `;
 
         const checkbox = li.querySelector('input[type="checkbox"]');
-        checkbox.addEventListener('change', () => toggleTodo(todo.id));
+        checkbox.addEventListener('change', () => toggleTodo(todo.id, todo.completed));
 
         const editBtn = li.querySelector('.edit-btn');
         editBtn.addEventListener('click', () => startEdit(todo));
@@ -87,59 +61,116 @@ function renderTodos(list) {
 
 addBtn.addEventListener('click', handleAddOrUpdate);
 
-function handleAddOrUpdate() {
+async function handleAddOrUpdate() {
     const text = todoInput.value.trim();
     if (!text) return;
 
     if (isEditing) {
-        updateTodo(currentEditId, text);
+        await updateTodo(currentEditId, text);
     } else {
-        addTodo(text);
+        await addTodo(text);
     }
 
     todoInput.value = '';
 }
 
-function addTodo(name) {
-    todos.push(createTodo(name));
-    persistChanges();
+async function addTodo(name) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, completed: false })
+        });
+
+        if (response.ok) {
+            await fetchTodos();
+        } else {
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            throw new Error(`Failed to add todo: ${response.status}`);
+        }
+    } catch (error) {
+        console.error('Error adding todo:', error);
+        alert('Failed to add todo. Please check console for details.');
+    }
 }
 
-function updateTodo(id, name) {
-    todos = todos.map(todo => todo.id === id ? { ...todo, name } : todo);
-    isEditing = false;
-    currentEditId = null;
-    addBtn.textContent = 'Add';
-    persistChanges();
+async function updateTodo(id, name) {
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name })
+        });
+
+        if (response.ok) {
+            isEditing = false;
+            currentEditId = null;
+            addBtn.textContent = 'Add';
+            await fetchTodos();
+        } else {
+            throw new Error('Failed to update todo');
+        }
+    } catch (error) {
+        console.error('Error updating todo:', error);
+        alert('Failed to update todo. Please try again.');
+    }
 }
 
-function toggleTodo(id) {
-    todos = todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo);
-    persistChanges();
+async function toggleTodo(id, currentStatus) {
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ completed: !currentStatus })
+        });
+
+        if (response.ok) {
+            await fetchTodos();
+        } else {
+            throw new Error('Failed to toggle todo');
+        }
+    } catch (error) {
+        console.error('Error toggling todo:', error);
+        alert('Failed to update todo status. Please try again.');
+    }
 }
 
-function deleteTodo(id) {
+async function deleteTodo(id) {
     if (!confirm('Are you sure you want to delete this task?')) return;
 
-    todos = todos.filter(todo => todo.id !== id);
-    if (isEditing && currentEditId === id) {
-        isEditing = false;
-        currentEditId = null;
-        addBtn.textContent = 'Add';
-        todoInput.value = '';
-    }
-    persistChanges();
-}
+    try {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'DELETE'
+        });
 
-function persistChanges() {
-    saveTodos();
-    renderTodos(todos);
+        if (response.ok) {
+            if (isEditing && currentEditId === id) {
+                isEditing = false;
+                currentEditId = null;
+                addBtn.textContent = 'Add';
+                todoInput.value = '';
+            }
+            await fetchTodos();
+        } else {
+            throw new Error('Failed to delete todo');
+        }
+    } catch (error) {
+        console.error('Error deleting todo:', error);
+        alert('Failed to delete todo. Please try again.');
+    }
 }
 
 function startEdit(todo) {
     isEditing = true;
     currentEditId = todo.id;
-    todoInput.value = todo.name;
+    todoInput.value = todo.name || todo.title || '';
     addBtn.textContent = 'Save';
     todoInput.focus();
 }

@@ -1,19 +1,36 @@
 ## Todo List App
 
-Ứng dụng Todo nhỏ gọn chạy hoàn toàn trên trình duyệt với LocalStorage, nên bạn chỉ cần mở file HTML là có đủ chức năng thêm/sửa/xóa và đánh dấu hoàn thành.
+Ứng dụng Todo List sử dụng MockAPI để lưu trữ và quản lý dữ liệu. Ứng dụng hỗ trợ đầy đủ các chức năng CRUD (Create, Read, Update, Delete) với giao diện đơn giản và dễ sử dụng.
 
 ### Cách chạy
 1. Tải mã nguồn (hoặc clone) về máy.
 2. Mở file `index.html` bằng bất kỳ trình duyệt hiện đại nào (Chrome/Edge/Firefox).
-3. Ứng dụng sẽ tự khởi tạo dữ liệu mẫu, mọi thay đổi được lưu trong LocalStorage.
+3. Ứng dụng sẽ tự động tải danh sách todo từ MockAPI khi khởi động.
 
 ### Chức năng
-- **Thêm việc**: nhập nội dung rồi nhấn `Add`.
-- **Sửa việc**: nhấn biểu tượng bút, chỉnh nội dung và lưu bằng `Save`.
-- **Đánh dấu hoàn thành**: tick vào checkbox.
-- **Xóa việc**: nhấn biểu tượng thùng rác (hệ thống sẽ hỏi xác nhận).
+- **Thêm việc**: nhập nội dung vào ô input rồi nhấn nút `Add`.
+- **Sửa việc**: nhấn biểu tượng bút (✏️), chỉnh sửa nội dung và nhấn `Save` để lưu.
+- **Đánh dấu hoàn thành**: tick vào checkbox bên trái mỗi todo item.
+- **Xóa việc**: nhấn biểu tượng thùng rác (🗑️), hệ thống sẽ hỏi xác nhận trước khi xóa.
+
+### API Endpoint
+- **Base URL**: `https://67d64b81286fdac89bc18855.mockapi.io/todo`
+- **GET**: Lấy danh sách tất cả todos
+- **POST**: Tạo todo mới
+- **PUT**: Cập nhật todo (theo ID)
+- **DELETE**: Xóa todo (theo ID)
+
+### Cấu trúc dữ liệu
+```json
+{
+  "id": "string",
+  "name": "string",
+  "completed": boolean
+}
+```
 
 ### Lưu ý
-- Dữ liệu nằm trong LocalStorage của trình duyệt hiện tại. Xóa dữ liệu duyệt hoặc đổi trình duyệt sẽ làm mất danh sách.
-- Để reset danh sách, có thể xóa key `todo-app-items` trong DevTools > Application > Local Storage hoặc dùng chế độ ẩn danh.
+- Ứng dụng cần kết nối internet để hoạt động (sử dụng MockAPI).
+- Dữ liệu được lưu trữ trên MockAPI, không phụ thuộc vào trình duyệt.
+- Nếu gặp lỗi kết nối, vui lòng kiểm tra kết nối mạng hoặc thử lại sau.
 
